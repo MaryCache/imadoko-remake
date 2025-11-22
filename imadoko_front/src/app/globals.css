@@ -1,0 +1,47 @@
+﻿@import "tailwindcss";
+
+@theme {
+  /* Mikasa Volleyball Colors */
+  --color-mikasa-blue: #003882;
+  --color-mikasa-blue-deep: #02042B;
+  --color-mikasa-blue-light: #E6F0FA;
+  
+  --color-mikasa-yellow: #FFC600;
+  --color-mikasa-yellow-dark: #E0A800;
+  --color-mikasa-yellow-light: #FFF9E6;
+
+  /* Position Colors */
+  --color-pos-ws: #0055A4;
+  --color-pos-mb: #047857;
+  --color-pos-s: #FFC600;
+  --color-pos-op: #BE123C;
+  --color-pos-li: #EA580C;
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@keyframes rotate-clockwise {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(60deg); }
+}
+
+@keyframes rotate-counter {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-60deg); }
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: rgb(247, 251, 255);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}

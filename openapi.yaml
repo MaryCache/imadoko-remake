@@ -1,0 +1,295 @@
+# OpenAPI 3.0 Specification
+# Single Source of Truth for imadoko-rota2
+openapi: 3.0.3
+info:
+  title: Imadoko Rota API
+  description: バレーボールローテーション管理システムのAPI仕様
+  version: 1.0.0
+  contact:
+    name: MaryCache
+    url: https://github.com/MaryCache/imadoko-remake
+
+servers:
+  - url: http://localhost:8080/api
+    description: Local Development Server
+  - url: https://imadoko-rota-api.example.com/api
+    description: Production Server
+
+# ========================================
+# ⚙️ 共通定数定義（Single Source of Truth）
+# ========================================
+components:
+  schemas:
+    # チーム
+    Team:
+      type: object
+      required:
+        - id
+        - teamName
+        - players
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        teamName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "東京バレーボールクラブ"
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/Player'
+          minItems: 1
+          maxItems: 14  # 🎯 ここが唯一の定義箇所
+          description: 選手リスト（1～14名）
+
+    # チーム作成/更新リクエスト
+    TeamRequest:
+      type: object
+      required:
+        - teamName
+        - players
+      properties:
+        teamName:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "東京バレーボールクラブ"
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlayerRequest'
+          minItems: 1
+          maxItems: 14  # 🎯 ここも自動的に同期
+          description: 選手リスト（1～14名）
+
+    # 選手
+    Player:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - position
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 30
+          example: "太郎"
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 30
+          example: "山田"
+        position:
+          type: string
+          enum:
+            - S    # セッター
+            - WS   # ウイングスパイカー
+            - MB   # ミドルブロッカー
+            - OP   # オポジット
+            - L    # リベロ
+          example: "WS"
+
+    # 選手作成/更新リクエスト
+    PlayerRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - position
+      properties:
+        firstName:
+          type: string
+          minLength: 1
+          maxLength: 30
+          example: "太郎"
+        lastName:
+          type: string
+          minLength: 1
+          maxLength: 30
+          example: "山田"
+        position:
+          type: string
+          enum: [S, WS, MB, OP, L]
+          example: "WS"
+
+    # エラーレスポンス
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "チーム名は必須です"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-11-21T10:30:00Z"
+
+  # ========================================
+  # 🔒 セキュリティ定義（将来の拡張用）
+  # ========================================
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT認証（将来実装予定）
+
+# ========================================
+# 📡 API エンドポイント
+# ========================================
+paths:
+  /teams:
+    get:
+      summary: チーム一覧取得
+      operationId: getAllTeams
+      tags:
+        - Teams
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    post:
+      summary: チーム作成
+      operationId: createTeam
+      tags:
+        - Teams
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamRequest'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /teams/{id}:
+    get:
+      summary: チーム取得
+      operationId: getTeamById
+      tags:
+        - Teams
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '404':
+          description: チームが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: チーム更新
+      operationId: updateTeam
+      tags:
+        - Teams
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TeamRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: チームが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: チーム削除
+      operationId: deleteTeam
+      tags:
+        - Teams
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+          example: 1
+      responses:
+        '204':
+          description: 削除成功
+        '404':
+          description: チームが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+tags:
+  - name: Teams
+    description: チーム管理API

@@ -1,0 +1,42 @@
+<!-- 
+  OpenAPI自動生成のためのMaven Plugin追加
+  
+  使用方法:
+  1. pom.xmlの<build><plugins>セクションに以下を追加
+  2. mvn clean compile で自動生成
+-->
+
+<plugin>
+    <groupId>org.openapitools</groupId>
+    <artifactId>openapi-generator-maven-plugin</artifactId>
+    <version>7.1.0</version>
+    <executions>
+        <execution>
+            <goals>
+                <goal>generate</goal>
+            </goals>
+            <configuration>
+                <!-- OpenAPI仕様ファイルのパス -->
+                <inputSpec>${project.basedir}/../openapi.yaml</inputSpec>
+                
+                <!-- 生成言語: Spring Boot -->
+                <generatorName>spring</generatorName>
+                
+                <!-- 出力先ディレクトリ -->
+                <output>${project.build.directory}/generated-sources</output>
+                
+                <!-- 生成対象: APIインターフェースとモデルのみ -->
+                <apiPackage>com.c.imadoko.imadoko_back.api.generated</apiPackage>
+                <modelPackage>com.c.imadoko.imadoko_back.api.generated.model</modelPackage>
+                
+                <!-- 既存のControllerは手動実装（インターフェースのみ生成） -->
+                <configOptions>
+                    <interfaceOnly>true</interfaceOnly>
+                    <useSpringBoot3>true</useSpringBoot3>
+                    <useTags>true</useTags>
+                    <skipDefaultInterface>false</skipDefaultInterface>
+                </configOptions>
+            </configuration>
+        </execution>
+    </executions>
+</plugin>
