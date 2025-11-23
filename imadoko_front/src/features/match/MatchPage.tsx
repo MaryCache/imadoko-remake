@@ -275,12 +275,15 @@ export default function MatchPage() {
                 scoresB={state.scoresB}
             />
 
-            {/* ドラッグオーバーレイ */}
+            {/* ドラッグオーバーレイ (ドラッグ中の表示) */}
             <DragOverlay dropAnimation={dropAnimation}>
                 {draggedItem ? (
-                    <div className="w-24 h-24 bg-white rounded-lg shadow-xl border-2 border-mikasa-blue flex flex-col items-center justify-center p-2 opacity-90 cursor-grabbing">
-                        <PositionBadge position={draggedItem.position} className="mb-1" />
-                        <span className="text-sm font-bold text-slate-900 text-center">
+                    // 修正: サイズを可変に (w-20 h-20 sm:w-24 sm:h-24)、パディング縮小
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-lg shadow-xl border-2 border-mikasa-blue flex flex-col items-center justify-center p-1 sm:p-2 opacity-90 cursor-grabbing">
+                        {/* 修正: バッジ縮小 */}
+                        <PositionBadge position={draggedItem.position} className="mb-0.5 sm:mb-1 scale-90 sm:scale-100 origin-bottom" />
+                        {/* 修正: 文字サイズ縮小 */}
+                        <span className="text-xs sm:text-sm font-bold text-slate-900 text-center truncate w-full leading-tight px-1">
                             {draggedItem.lastName}
                         </span>
                     </div>

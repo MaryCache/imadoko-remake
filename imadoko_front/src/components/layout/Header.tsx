@@ -27,7 +27,8 @@ export const Header: React.FC = () => {
                             width={213}
                             height={40}
                             priority
-                            className="h-10 w-auto"
+                            // 修正: モバイルでは h-8 (32px)、PC以上(sm:)では h-10 (40px) に切り替え
+                            className="h-8 sm:h-10 w-auto"
                         />
                     </Link>
                 </div>

@@ -45,7 +45,7 @@ export const CourtSlot = memo<CourtSlotProps>(({
             type: 'court',
             side,
             slotId: slot,
-            player, // 現在の選手情報も渡しておくと便利かも
+            player,
         },
     });
 
@@ -57,14 +57,14 @@ export const CourtSlot = memo<CourtSlotProps>(({
         transform,
         isDragging
     } = useDraggable({
-        id: `court-${side}-${slot}-player`, // 選手IDではなくスロット位置ベースのIDにする（選手がnullの場合もあるが、Draggableはplayerが存在するときのみ有効）
+        id: `court-${side}-${slot}-player`,
         data: {
             type: 'court',
             side,
             slotId: slot,
             player,
         },
-        disabled: !player, // 選手がいない場合はドラッグ不可
+        disabled: !player,
     });
 
     // 外部Refとdnd-kitのRefを合成
@@ -81,7 +81,7 @@ export const CourtSlot = memo<CourtSlotProps>(({
             aria-label={`ポジション${slot}${player ? `: ${player.lastName} (${player.position})` : ': 空き'}${isServerPosition ? ' (サーブ権)' : ''}`}
             style={{ zIndex: player ? Z_INDEX.COURT_SLOT_OCCUPIED : Z_INDEX.COURT_SLOT_EMPTY }}
             className={clsx(
-                "relative w-full h-full border-2 flex items-center justify-center p-2 transition-all duration-200",
+                "relative w-full h-full border-2 flex items-center justify-center p-1 sm:p-2 transition-all duration-200",
                 isOver ? "border-mikasa-yellow bg-mikasa-yellow/20 scale-105" : "border-white/40",
                 "hover:bg-white/20 cursor-pointer",
                 "focus:outline-none focus:ring-2 focus:ring-mikasa-yellow focus:ring-offset-2 focus:bg-white/30"
@@ -95,8 +95,8 @@ export const CourtSlot = memo<CourtSlotProps>(({
 
             {/* 位置番号 - 半透明バッジスタイル */}
             <div className="absolute top-1.5 left-1.5" style={{ zIndex: Z_INDEX.SLOT_BADGE }}>
-                <div className="w-7 h-7 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center border border-white/50 shadow-sm">
-                    <span className="text-sm font-bold text-white drop-shadow-sm">
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/30 backdrop-blur-sm flex items-center justify-center border border-white/50 shadow-sm">
+                    <span className="text-xs sm:text-sm font-bold text-white drop-shadow-sm">
                         {slot}
                     </span>
                 </div>
@@ -122,20 +122,23 @@ export const CourtSlot = memo<CourtSlotProps>(({
                         position: 'relative',
                         opacity: isDragging ? 0.5 : 1,
                     }}
-                    className="flex flex-col items-center justify-center w-full max-h-[65%] bg-white rounded-lg shadow-md px-2 py-1 cursor-grab active:cursor-grabbing touch-none"
+                    // 修正: パディングを減らす (px-2 py-1 -> px-1 py-0.5)
+                    className="flex flex-col items-center justify-center w-full max-h-[80%] sm:max-h-[65%] bg-white rounded-lg shadow-md px-1 py-0.5 sm:px-2 sm:py-1 cursor-grab active:cursor-grabbing touch-none"
                 >
-                    <PositionBadge position={player.position} className="mb-0.5 flex-shrink-0" />
+                    {/* 修正: バッジを少し小さく (scale-90) */}
+                    <PositionBadge position={player.position} className="mb-0.5 flex-shrink-0 scale-90 sm:scale-100 origin-bottom" />
+                    {/* 修正: 文字サイズを小さく (text-xs)、行間も詰める */}
                     <span
-                        className="text-sm font-semibold text-slate-900 w-full text-center overflow-hidden text-ellipsis px-1"
-                        style={{ whiteSpace: 'nowrap', lineHeight: '1.2rem', height: '1.2rem' }}
+                        className="text-[10px] sm:text-sm font-semibold text-slate-900 w-full text-center overflow-hidden text-ellipsis px-0.5 leading-tight"
+                        style={{ whiteSpace: 'nowrap' }}
                     >
-                        {player.lastName} {player.firstName}
+                        {player.lastName} {player.firstName && player.firstName[0]}
                     </span>
                 </motion.div>
             )}
 
             {!player && (
-                <div className="text-white/30 text-xs uppercase tracking-wider font-medium">EMPTY</div>
+                <div className="text-white/30 text-[10px] sm:text-xs uppercase tracking-wider font-medium">EMPTY</div>
             )}
         </div>
     );
