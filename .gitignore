@@ -15,7 +15,7 @@ docs/archive/
 # Logs
 *.log
 logs/
-
+response/
 # Temporary files
 tmp/
 temp/

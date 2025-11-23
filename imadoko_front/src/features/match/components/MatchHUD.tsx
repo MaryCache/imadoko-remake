@@ -100,7 +100,7 @@ export const MatchHUD: React.FC<MatchHUDProps> = ({
                 </div>
             </motion.div>
 
-            {/* トグルバー - スタイリッシュ&モダン */}
+            {/* トグルバー */}
             <motion.button
                 onClick={() => setIsHudOpen(!isHudOpen)}
                 whileHover={{ scale: 1.05, x: -3 }}

@@ -19,10 +19,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # 初期化SQLスクリプト（オプション）
-      - ./imadoko_back/src/main/resources/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -34,8 +32,8 @@ services:
   # ========================================
   backend:
     build:
-      context: ./imadoko_back
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: imadoko_back/Dockerfile
     container_name: imadoko-backend
     ports:
       - "8080:8080"
@@ -44,22 +42,22 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/imadoko
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: postgres
-      
+
       # JPA設定
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
       SPRING_JPA_SHOW_SQL: "true"
       SPRING_JPA_PROPERTIES_HIBERNATE_FORMAT_SQL: "true"
-      
+
       # CORS設定
       APP_CORS_ALLOWED_ORIGINS: http://localhost:3000,http://frontend:3000
-      
+
       # タイムゾーン
       TZ: "Asia/Tokyo"
     depends_on:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -71,18 +69,22 @@ services:
   # ========================================
   frontend:
     build:
-      context: ./imadoko_front
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: imadoko_front/Dockerfile.dev
     container_name: imadoko-frontend
     ports:
       - "3000:3000"
     environment:
-      # バックエンドAPI URL
-      NEXT_PUBLIC_API_URL: http://localhost:8080/api
-      
+      # Docker内部通信用のURL
+      INTERNAL_API_URL: http://backend:8080/api
+
       # Node環境
       NODE_ENV: development
-      
+
+      # Next.jsのファイル監視用（Docker環境でpollingを有効化）
+      CHOKIDAR_USEPOLLING: true
+      WATCHPACK_POLLING: true
+
       # タイムゾーン
       TZ: "Asia/Tokyo"
     depends_on:
@@ -90,8 +92,7 @@ services:
         condition: service_healthy
     volumes:
       # ホットリロード用（開発時のみ）
-      - ./imadoko_front/src:/app/src
-      - ./imadoko_front/public:/app/public
+      - ./imadoko_front:/app
       - /app/node_modules
       - /app/.next
     networks:

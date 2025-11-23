@@ -202,7 +202,8 @@ export const useMatchGame = () => {
         baseB: { ...INITIAL_ASSIGNMENT }
     }));
 
-    const dropPlayerA = (slot: CourtSlotId, player: Player) => {
+    // ★ 修正: benchIndex引数を追加（オプショナル）
+    const dropPlayerA = (slot: CourtSlotId, player: Player, benchIndex?: number) => {
         setState(s => {
             const belongsToTeam = s.teamA?.players.some(p => p.id === player.id);
             if (!belongsToTeam) {
@@ -225,7 +226,7 @@ export const useMatchGame = () => {
             const newPlayersA = s.playersA.map(p => p?.id === player.id ? null : p);
 
             if (targetPlayer && targetPlayer.id !== player.id) {
-                // Court内にすでに該当選手がいる場合はスワップ
+                // Court内にすでに該当選手がいる場合はスワップ（Court <-> Court のケース）
                 let sourceBaseSlot: CourtSlotId | null = null;
                 for (const slot of COURT_SLOTS) {
                     if (s.baseA[slot as CourtSlotId]?.id === player.id) {
@@ -250,15 +251,23 @@ export const useMatchGame = () => {
 
             // 通常の配置（空き枠 or 置き換え）
             const cleanedBaseA = removePlayerFromAssignment(s.baseA, player.id);
+
+            // ★ 修正: targetPlayerが存在し、benchIndexが指定されている場合、スワップ（Bench <-> Court のケース）
+            if (targetPlayer && benchIndex !== undefined) {
+                // ベンチのその位置にコート選手を配置（スワップ）
+                newPlayersA[benchIndex] = { ...targetPlayer, _side: 'A' } as PlayerWithSide;
+            }
+
             return {
                 ...s,
                 baseA: { ...cleanedBaseA, [baseSlot]: player },
-                playersA: newPlayersA,  // ベンチから削除
+                playersA: newPlayersA,
             };
         });
     };
 
-    const dropPlayerB = (slot: CourtSlotId, player: Player) => {
+    // ★ 修正: benchIndex引数を追加（オプショナル）
+    const dropPlayerB = (slot: CourtSlotId, player: Player, benchIndex?: number) => {
         setState(s => {
             const belongsToTeam = s.teamB?.players.some(p => p.id === player.id);
             if (!belongsToTeam) {
@@ -281,7 +290,7 @@ export const useMatchGame = () => {
             const newPlayersB = s.playersB.map(p => p?.id === player.id ? null : p);
 
             if (targetPlayer && targetPlayer.id !== player.id) {
-                // Court内にすでに該当選手がいる場合はスワップ
+                // Court内にすでに該当選手がいる場合はスワップ（Court <-> Court のケース）
                 let sourceBaseSlot: CourtSlotId | null = null;
                 for (const slot of COURT_SLOTS) {
                     if (s.baseB[slot as CourtSlotId]?.id === player.id) {
@@ -306,18 +315,26 @@ export const useMatchGame = () => {
 
             // 通常の配置（空き枠 or 置き換え）
             const cleanedBaseB = removePlayerFromAssignment(s.baseB, player.id);
+
+            // ★ 修正: targetPlayerが存在し、benchIndexが指定されている場合、スワップ（Bench <-> Court のケース）
+            if (targetPlayer && benchIndex !== undefined) {
+                // ベンチのその位置にコート選手を配置（スワップ）
+                newPlayersB[benchIndex] = { ...targetPlayer, _side: 'B' } as PlayerWithSide;
+            }
+
             return {
                 ...s,
                 baseB: { ...cleanedBaseB, [baseSlot]: player },
-                playersB: newPlayersB,  // ベンチから削除
+                playersB: newPlayersB,
             };
         });
     };
 
     const swapSides = () => {
         setState(s => {
-            const newPlayersA = s.playersB.map(p => ({ ...p, _side: 'A' as const }));
-            const newPlayersB = s.playersA.map(p => ({ ...p, _side: 'B' as const }));
+            // ★ 修正: nullチェックを追加
+            const newPlayersA = s.playersB.map(p => p ? { ...p, _side: 'A' as const } : null);
+            const newPlayersB = s.playersA.map(p => p ? { ...p, _side: 'B' as const } : null);
 
             return {
                 ...s,
@@ -412,7 +429,6 @@ export const useMatchGame = () => {
     };
 
     // 🛡 Court players swap (Court <-> Court)
-    // ★★★ 新規追加 ★★★
     const swapCourtPlayers = (side: 'A' | 'B', displaySourceSlot: CourtSlotId, displayTargetSlot: CourtSlotId) => {
         setState(s => {
             const scores = side === 'A' ? s.scoresA : s.scoresB;
@@ -575,7 +591,7 @@ export const useMatchGame = () => {
             swapCourtAndBench,
             resetBench,
             resetCourt,
-            swapCourtPlayers  // ★★★ 追加 ★★★
+            swapCourtPlayers
         }
     };
 }

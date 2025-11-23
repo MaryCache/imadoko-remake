@@ -1,20 +1,26 @@
-# Spring Boot Dockerfile（マルチステージビルド）
-
 # ========================================
 # Stage 1: Build
 # ========================================
-FROM eclipse-temurin:21-jdk-alpine AS builder
+FROM maven:3.9-eclipse-temurin-21-alpine AS builder
 
 WORKDIR /app
 
-# Mavenラッパーとpom.xmlをコピー
-COPY tools ./tools
-COPY pom.xml ./
-COPY src ./src
+# 1. 共有ファイル（OpenAPI定義）を先にコピー
+# これで /app/openapi.yaml に配置される
+COPY openapi.yaml .
 
-# 依存関係のダウンロードとビルド
-RUN chmod +x ./tools/apache-maven-3.9.6/bin/mvn && \
-    ./tools/apache-maven-3.9.6/bin/mvn clean package -DskipTests
+# 2. バックエンドの作業ディレクトリを作成
+WORKDIR /app/imadoko_back
+
+# 3. pom.xml をコピー（コンテキストがルートになったのでパス付きで指定）
+COPY imadoko_back/pom.xml .
+
+# 4. 依存関係のダウンロード
+RUN mvn dependency:go-offline
+
+# 5. ソースコードをコピーしてビルド
+COPY imadoko_back/src ./src
+RUN mvn clean package -DskipTests
 
 # ========================================
 # Stage 2: Runtime
@@ -24,7 +30,8 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # ビルド成果物をコピー
-COPY --from=builder /app/target/*.jar app.jar
+# builderステージの /app/imadoko_back/target/ から持ってくる
+COPY --from=builder /app/imadoko_back/target/*.jar app.jar
 
 # ヘルスチェック用にcurlをインストール
 RUN apk add --no-cache curl

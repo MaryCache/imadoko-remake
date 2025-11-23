@@ -81,7 +81,7 @@ export const CourtSlot = memo<CourtSlotProps>(({
             aria-label={`ポジション${slot}${player ? `: ${player.lastName} (${player.position})` : ': 空き'}${isServerPosition ? ' (サーブ権)' : ''}`}
             style={{ zIndex: player ? Z_INDEX.COURT_SLOT_OCCUPIED : Z_INDEX.COURT_SLOT_EMPTY }}
             className={clsx(
-                "relative aspect-square border-2 flex items-center justify-center p-2 transition-all duration-200",
+                "relative w-full h-full border-2 flex items-center justify-center p-2 transition-all duration-200",
                 isOver ? "border-mikasa-yellow bg-mikasa-yellow/20 scale-105" : "border-white/40",
                 "hover:bg-white/20 cursor-pointer",
                 "focus:outline-none focus:ring-2 focus:ring-mikasa-yellow focus:ring-offset-2 focus:bg-white/30"
@@ -125,7 +125,10 @@ export const CourtSlot = memo<CourtSlotProps>(({
                     className="flex flex-col items-center justify-center w-full max-h-[65%] bg-white rounded-lg shadow-md px-2 py-1 cursor-grab active:cursor-grabbing touch-none"
                 >
                     <PositionBadge position={player.position} className="mb-0.5 flex-shrink-0" />
-                    <span className="text-sm font-semibold text-slate-900 w-full text-center overflow-hidden text-ellipsis px-1" style={{ whiteSpace: 'nowrap', lineHeight: '1.2rem', height: '1.2rem' }}>
+                    <span
+                        className="text-sm font-semibold text-slate-900 w-full text-center overflow-hidden text-ellipsis px-1"
+                        style={{ whiteSpace: 'nowrap', lineHeight: '1.2rem', height: '1.2rem' }}
+                    >
                         {player.lastName} {player.firstName}
                     </span>
                 </motion.div>

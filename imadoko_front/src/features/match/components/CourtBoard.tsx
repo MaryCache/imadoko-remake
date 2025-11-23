@@ -44,43 +44,57 @@ export const CourtBoard = memo<CourtBoardProps>(({
                 <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-slate-900">{label}</h3>
                     {onResetCourt && (
-                        <Button size="sm" variant="danger" onClick={onResetCourt} title="コート上の選手を全てベンチに戻す" className="group">
+                        <Button
+                            size="sm"
+                            variant="danger"
+                            onClick={onResetCourt}
+                            title="コート上の選手を全てベンチに戻す"
+                            className="group"
+                        >
                             <RefreshCw size={14} />
                         </Button>
                     )}
                 </div>
             )}
+
             <div
                 className={clsx(
-                    "relative rounded-xl p-6 overflow-hidden min-h-[320px] transition-all duration-500",
+                    "relative rounded-2xl p-4 sm:p-6 overflow-hidden transition-all duration-500",
                     isRotating && "scale-[1.02]"
                 )}
                 style={{
-                    background: 'linear-gradient(135deg, rgba(2, 4, 43, 0.95) 0%, rgba(0, 56, 130, 0.9) 50%, rgba(0, 85, 164, 0.85) 100%)'
+                    background:
+                        "linear-gradient(135deg, rgba(2, 4, 43, 0.95) 0%, rgba(0, 56, 130, 0.9) 50%, rgba(0, 85, 164, 0.85) 100%)",
                 }}
             >
                 {/* Glass effect overlay */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-white/10 pointer-events-none" />
 
-                <div className="grid grid-cols-3 grid-rows-2 gap-2 relative z-10" style={{ isolation: 'isolate' }}>
-                    {grid.map((row, rowIndex) => (
-                        <React.Fragment key={rowIndex}>
-                            {row.map((slot) => (
-                                <CourtSlot
-                                    key={`${slot}-${assignment[slot]?.id ?? 'empty'}`}
-                                    slot={slot}
-                                    player={assignment[slot]}
-                                    side={side}
-                                    hasServe={hasServe}
-                                    isFocused={focusedSlot === slot}
-                                    onKeyDown={(e) => handleKeyDown(slot, e)}
-                                    slotRef={(el) => {
-                                        slotRefs.current[slot] = el;
-                                    }}
-                                />
+                <div className="relative z-10" style={{ isolation: "isolate" }}>
+                    {/* コートキャンバス */}
+                    <div className="w-full aspect-[3/2] sm:aspect-[2/1.4]">
+                        {/* セル分割 */}
+                        <div className="grid h-full w-full grid-cols-3 grid-rows-2 gap-2 sm:gap-3">
+                            {grid.map((row, rowIndex) => (
+                                <React.Fragment key={rowIndex}>
+                                    {row.map((slot) => (
+                                        <CourtSlot
+                                            key={`${slot}-${assignment[slot]?.id ?? "empty"}`}
+                                            slot={slot}
+                                            player={assignment[slot]}
+                                            side={side}
+                                            hasServe={hasServe}
+                                            isFocused={focusedSlot === slot}
+                                            onKeyDown={(e) => handleKeyDown(slot, e)}
+                                            slotRef={(el) => {
+                                                slotRefs.current[slot] = el;
+                                            }}
+                                        />
+                                    ))}
+                                </React.Fragment>
                             ))}
-                        </React.Fragment>
-                    ))}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

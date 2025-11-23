@@ -5,8 +5,8 @@ import { logger } from './logger';
 // - サーバー側: 直接バックエンド(localhost:8080)に接続
 // - クライアント側: プロキシ(/api)経由でバックエンドに接続 (ngrok対応)
 const baseURL = typeof window === 'undefined'
-    ? process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api'
-    : process.env.NEXT_PUBLIC_API_URL || '/api';
+    ? process.env.INTERNAL_API_URL || 'http://localhost:8080/api'  // SSR時はINTERNAL_API_URLを使う
+    : '/api'; // クライアント側は常にNext.jsのプロキシを使う
 
 // API URLのログ出力
 if (typeof window !== 'undefined') {

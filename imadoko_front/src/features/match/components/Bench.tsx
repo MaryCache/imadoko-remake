@@ -69,9 +69,15 @@ export const Bench = memo<BenchProps>(({ players, side, onResetBench, droppableI
                         className="overflow-hidden"
                     >
                         <div className="p-4 pt-0 space-y-3">
-                            <div className="flex justify-end">
+                            <div className="flex justify-end mt-2">
                                 {onResetBench && (
-                                    <Button size="sm" variant="danger" onClick={onResetBench} title="選手一覧の位置をリセット" className="group">
+                                    <Button
+                                        size="sm"
+                                        variant="danger"
+                                        onClick={onResetBench}
+                                        title="選手一覧の位置をリセット"
+                                        className="group"
+                                    >
                                         <RefreshCw size={14} />
                                     </Button>
                                 )}
