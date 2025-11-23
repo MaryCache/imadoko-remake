@@ -94,10 +94,13 @@ export default function MatchPage() {
         // ------------------------------------------------------------------
         if (sourceType === 'bench' && targetType === 'court') {
             const slotId = overData.slotId as CourtSlotId;
+            // ★ Step 6修正: ベンチのindexを取得して渡す（スワップ用）
+            const benchIndex = activeData.index as number;
+
             if (sourceSide === 'A') {
-                actions.dropPlayerA(slotId, player);
+                actions.dropPlayerA(slotId, player, benchIndex);
             } else {
-                actions.dropPlayerB(slotId, player);
+                actions.dropPlayerB(slotId, player, benchIndex);
             }
         }
         // ------------------------------------------------------------------
@@ -162,29 +165,37 @@ export default function MatchPage() {
             onDragStart={handleDragStart}
             onDragEnd={handleDragEnd}
         >
-            <div className="space-y-4 pb-28"> {/* Footer用にpaddingを追加 (HUDと被らないよう広めに) */}
+            {/* ★ Step 8修正: メインコンテンツを独立させ、レイアウト干渉を防ぐ */}
+            <div className="space-y-4 pb-28">
                 <MatchControls onSwapSides={actions.swapSides} onResetAll={actions.resetAll} />
 
-                {/* モバイル用タブ切り替え */}
-                <div className="md:hidden flex rounded-lg bg-slate-100 p-1 mb-4">
+                {/* ★ モバイル用タブ切り替え: 「フォルダタブ」風デザインに刷新 
+                   下のコンテンツエリアと物理的に繋がっているように見せる
+                */}
+                <div className="md:hidden flex items-end px-2 -mb-[2px] relative z-10 select-none">
                     <button
                         onClick={() => setActiveTab('A')}
                         className={clsx(
-                            "flex-1 py-2 text-sm font-bold rounded-md transition-all",
+                            "flex-1 py-3 text-sm font-bold rounded-t-xl border-t-2 border-x-2 transition-all duration-150",
                             activeTab === 'A'
-                                ? "bg-white text-mikasa-blue-deep shadow-sm"
-                                : "text-slate-500 hover:text-slate-700"
+                                // Active: 白背景、下線なし(border-b-0)、z-index高(手前)
+                                // 下のマージンを調整してコンテンツエリアに「被せる」
+                                ? "bg-white text-mikasa-blue-deep border-slate-200 border-b-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]"
+                                // Inactive: グレー背景、下線あり(border-b-2)、z-index低(奥)
+                                : "bg-slate-100 text-slate-400 border-transparent border-b-2 border-b-slate-200 hover:bg-slate-50 z-0"
                         )}
                     >
                         {state.teamA?.teamName || 'チームA'}
                     </button>
+                    {/* 隙間 */}
+                    <div className="w-1 border-b-2 border-slate-200"></div>
                     <button
                         onClick={() => setActiveTab('B')}
                         className={clsx(
-                            "flex-1 py-2 text-sm font-bold rounded-md transition-all",
+                            "flex-1 py-3 text-sm font-bold rounded-t-xl border-t-2 border-x-2 transition-all duration-150",
                             activeTab === 'B'
-                                ? "bg-white text-mikasa-blue-deep shadow-sm"
-                                : "text-slate-500 hover:text-slate-700"
+                                ? "bg-white text-mikasa-blue-deep border-slate-200 border-b-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]"
+                                : "bg-slate-100 text-slate-400 border-transparent border-b-2 border-b-slate-200 hover:bg-slate-50 z-0"
                         )}
                     >
                         {state.teamB?.teamName || 'チームB'}
@@ -253,28 +264,30 @@ export default function MatchPage() {
                         </LayoutGroup>
                     </div>
                 </div>
-
-                {/* スティッキーフッター */}
-                <MatchFooter
-                    teamAName={state.teamA?.teamName || 'Team A'}
-                    teamBName={state.teamB?.teamName || 'Team B'}
-                    scoresA={state.scoresA}
-                    scoresB={state.scoresB}
-                />
-
-                {/* ドラッグオーバーレイ (ドラッグ中の表示) */}
-                <DragOverlay dropAnimation={dropAnimation}>
-                    {draggedItem ? (
-                        <div className="w-24 h-24 bg-white rounded-lg shadow-xl border-2 border-mikasa-blue flex flex-col items-center justify-center p-2 opacity-90 cursor-grabbing">
-                            <PositionBadge position={draggedItem.position} className="mb-1" />
-                            <span className="text-sm font-bold text-slate-900 text-center">
-                                {draggedItem.lastName}
-                            </span>
-                        </div>
-                    ) : null}
-                </DragOverlay>
             </div>
-            {/* HUD（ヘッドアップディスプレイ） */}
+            {/* ↑ メインコンテンツの閉じタグ */}
+
+            {/* スティッキーフッター */}
+            <MatchFooter
+                teamAName={state.teamA?.teamName || 'Team A'}
+                teamBName={state.teamB?.teamName || 'Team B'}
+                scoresA={state.scoresA}
+                scoresB={state.scoresB}
+            />
+
+            {/* ドラッグオーバーレイ */}
+            <DragOverlay dropAnimation={dropAnimation}>
+                {draggedItem ? (
+                    <div className="w-24 h-24 bg-white rounded-lg shadow-xl border-2 border-mikasa-blue flex flex-col items-center justify-center p-2 opacity-90 cursor-grabbing">
+                        <PositionBadge position={draggedItem.position} className="mb-1" />
+                        <span className="text-sm font-bold text-slate-900 text-center">
+                            {draggedItem.lastName}
+                        </span>
+                    </div>
+                ) : null}
+            </DragOverlay>
+
+            {/* HUD */}
             <MatchHUD
                 serveStatus={state.serveStatus}
                 sameTeamWarning={{

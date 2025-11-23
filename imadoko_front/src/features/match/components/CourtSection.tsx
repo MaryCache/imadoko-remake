@@ -1,6 +1,6 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
-import type { Player, CourtAssignment, CourtSlotId, Team, SetterRotationConfig } from '../../../types';
+import type { Player, CourtAssignment, Team, SetterRotationConfig } from '../../../types';
 import { CourtBoard } from './CourtBoard';
 import { Bench } from './Bench';
 import { TeamSelector } from './TeamSelector';
@@ -42,7 +42,7 @@ interface CourtSectionProps {
 export const CourtSection: React.FC<CourtSectionProps> = ({
     team,
     teams,
-    players, // 修正: 受け取る
+    players,
     side,
     assignment,
     sideOut,
@@ -61,11 +61,13 @@ export const CourtSection: React.FC<CourtSectionProps> = ({
 
     return (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+            {/* 修正: p-6 -> p-3 (モバイル) に変更して高さを圧縮 */}
+            <div className="p-3 sm:p-6 border-b border-slate-100 bg-slate-50/50">
                 <TeamSelector value={team} teams={teams} onChange={onSelectTeam} placeholder={placeholder} />
             </div>
 
-            <div className="p-6 space-y-6">
+            {/* 修正: コンテンツ部分の余白も少し調整 (p-6 -> p-4 sm:p-6) */}
+            <div className="p-4 sm:p-6 space-y-6">
                 <ScoreBoard
                     side={side}
                     sideOut={sideOut}
@@ -81,7 +83,7 @@ export const CourtSection: React.FC<CourtSectionProps> = ({
                         side={side}
                         isRotating={isRotating}
                         previousAssignment={previousAssignment}
-                        onResetCourt={onResetCourt} // 変更
+                        onResetCourt={onResetCourt}
                         hasServe={hasServe}
                     />
                     {team && (
@@ -90,7 +92,7 @@ export const CourtSection: React.FC<CourtSectionProps> = ({
                             players={players}
                             assignment={assignment}
                             side={side}
-                            onResetBench={onResetBench} // 変更
+                            onResetBench={onResetBench}
                         />
                     )}
                     {team && (

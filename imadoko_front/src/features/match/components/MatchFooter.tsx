@@ -14,12 +14,9 @@ export const MatchFooter: React.FC<MatchFooterProps> = ({
     scoresB,
 }) => {
     return (
-        // ★ 修正: z-indexを50に上げ、GPUアクセラレーション(translate3d)を有効化
-        // これにより、ドラッグ操作時のレイアウトシフトや再描画の影響を受けずに固定される
-        <div
-            className="fixed bottom-0 left-0 right-0 z-50"
-            style={{ transform: 'translate3d(0,0,0)' }}
-        >
+        // 修正: style={{ transform: 'translate3d(0,0,0)' }} を削除
+        // z-50 は維持（DragOverlayとの重なり順のため）
+        <div className="fixed bottom-0 left-0 right-0 z-50">
             {/* グラデーションボーダー（上部） */}
             <div className="h-[1px] w-full bg-gradient-to-r from-transparent via-slate-300 to-transparent" />
 

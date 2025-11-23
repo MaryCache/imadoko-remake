@@ -169,19 +169,32 @@ const removePlayerFromAssignment = (assignment: CourtAssignment, playerId: numbe
 };
 
 export const useMatchGame = () => {
-    const [state, setState] = useState<MatchState>(() => {
-        if (typeof window === 'undefined') {
-            return INITIAL_STATE;
-        }
-        const stored = localStorage.getItem(STORAGE_KEY);
-        return stored ? JSON.parse(stored) : INITIAL_STATE;
-    });
+    // ★ 修正: 初期化時は必ず INITIAL_STATE を使い、Hydration Errorを防ぐ
+    const [state, setState] = useState<MatchState>(INITIAL_STATE);
+    // ★ 追加: 初期ロード完了フラグ（空データで上書き保存してしまうのを防ぐため）
+    const [isInitialized, setIsInitialized] = useState(false);
 
+    // ★ 追加: マウント後にローカルストレージから読み込む
     useEffect(() => {
         if (typeof window !== 'undefined') {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            if (stored) {
+                try {
+                    setState(JSON.parse(stored));
+                } catch (e) {
+                    logger.error('Failed to parse match state', e);
+                }
+            }
+            setIsInitialized(true); // 読み込み完了
+        }
+    }, []);
+
+    // ★ 修正: 読み込み完了後のみ保存を実行する
+    useEffect(() => {
+        if (typeof window !== 'undefined' && isInitialized) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
         }
-    }, [state]);
+    }, [state, isInitialized]);
 
     // Derived state: Current Assignments
     const assignA = rotateAssignment(state.baseA, state.scoresA.so);
@@ -202,7 +215,6 @@ export const useMatchGame = () => {
         baseB: { ...INITIAL_ASSIGNMENT }
     }));
 
-    // ★ 修正: benchIndex引数を追加（オプショナル）
     const dropPlayerA = (slot: CourtSlotId, player: Player, benchIndex?: number) => {
         setState(s => {
             const belongsToTeam = s.teamA?.players.some(p => p.id === player.id);
@@ -222,7 +234,7 @@ export const useMatchGame = () => {
 
             const targetPlayer = s.baseA[baseSlot];
 
-            // 🔥 CRITICAL: ベンチから選手を削除
+            // ベンチから選手を削除
             const newPlayersA = s.playersA.map(p => p?.id === player.id ? null : p);
 
             if (targetPlayer && targetPlayer.id !== player.id) {
@@ -244,7 +256,7 @@ export const useMatchGame = () => {
                             [baseSlot]: player,
                             [sourceBaseSlot]: targetPlayer,
                         },
-                        playersA: newPlayersA,  // ベンチから削除
+                        playersA: newPlayersA,
                     };
                 }
             }
@@ -252,9 +264,8 @@ export const useMatchGame = () => {
             // 通常の配置（空き枠 or 置き換え）
             const cleanedBaseA = removePlayerFromAssignment(s.baseA, player.id);
 
-            // ★ 修正: targetPlayerが存在し、benchIndexが指定されている場合、スワップ（Bench <-> Court のケース）
+            // targetPlayerが存在し、benchIndexが指定されている場合、スワップ（Bench <-> Court のケース）
             if (targetPlayer && benchIndex !== undefined) {
-                // ベンチのその位置にコート選手を配置（スワップ）
                 newPlayersA[benchIndex] = { ...targetPlayer, _side: 'A' } as PlayerWithSide;
             }
 
@@ -266,7 +277,6 @@ export const useMatchGame = () => {
         });
     };
 
-    // ★ 修正: benchIndex引数を追加（オプショナル）
     const dropPlayerB = (slot: CourtSlotId, player: Player, benchIndex?: number) => {
         setState(s => {
             const belongsToTeam = s.teamB?.players.some(p => p.id === player.id);
@@ -286,7 +296,7 @@ export const useMatchGame = () => {
 
             const targetPlayer = s.baseB[baseSlot];
 
-            // 🔥 CRITICAL: ベンチから選手を削除
+            // ベンチから選手を削除
             const newPlayersB = s.playersB.map(p => p?.id === player.id ? null : p);
 
             if (targetPlayer && targetPlayer.id !== player.id) {
@@ -308,7 +318,7 @@ export const useMatchGame = () => {
                             [baseSlot]: player,
                             [sourceBaseSlot]: targetPlayer,
                         },
-                        playersB: newPlayersB,  // ベンチから削除
+                        playersB: newPlayersB,
                     };
                 }
             }
@@ -316,9 +326,8 @@ export const useMatchGame = () => {
             // 通常の配置（空き枠 or 置き換え）
             const cleanedBaseB = removePlayerFromAssignment(s.baseB, player.id);
 
-            // ★ 修正: targetPlayerが存在し、benchIndexが指定されている場合、スワップ（Bench <-> Court のケース）
+            // targetPlayerが存在し、benchIndexが指定されている場合、スワップ（Bench <-> Court のケース）
             if (targetPlayer && benchIndex !== undefined) {
-                // ベンチのその位置にコート選手を配置（スワップ）
                 newPlayersB[benchIndex] = { ...targetPlayer, _side: 'B' } as PlayerWithSide;
             }
 
@@ -332,7 +341,6 @@ export const useMatchGame = () => {
 
     const swapSides = () => {
         setState(s => {
-            // ★ 修正: nullチェックを追加
             const newPlayersA = s.playersB.map(p => p ? { ...p, _side: 'A' as const } : null);
             const newPlayersB = s.playersA.map(p => p ? { ...p, _side: 'B' as const } : null);
 
@@ -396,14 +404,12 @@ export const useMatchGame = () => {
     };
 
     // 🛡 Court and Bench swap
-    // 修正: ベンチが空(null)の場合の移動と、選手がいる場合のスワップを両対応
     const swapCourtAndBench = (side: 'A' | 'B', displaySlot: CourtSlotId, benchIndex: number) => {
         setState(s => {
             const scores = side === 'A' ? s.scoresA : s.scoresB;
             const base = side === 'A' ? s.baseA : s.baseB;
             const players = side === 'A' ? [...s.playersA] : [...s.playersB];
 
-            // 🔥 CRITICAL: 表示座標→base座標の変換
             const baseSlot = reverseRotateSlot(displaySlot, scores.so);
 
             const courtPlayer = base[baseSlot];
@@ -414,7 +420,6 @@ export const useMatchGame = () => {
 
             if (courtPlayer) {
                 // コートの選手をベンチへ
-                // 型エラー回避のための再構築
                 const p = { ...courtPlayer, _side: side };
                 players[benchIndex] = p;
             } else {
@@ -434,7 +439,6 @@ export const useMatchGame = () => {
             const scores = side === 'A' ? s.scoresA : s.scoresB;
             const base = side === 'A' ? s.baseA : s.baseB;
 
-            // 🔥 CRITICAL: ディスプレイスロット → ベーススロットに変換
             const baseSourceSlot = reverseRotateSlot(displaySourceSlot, scores.so);
             const baseTargetSlot = reverseRotateSlot(displayTargetSlot, scores.so);
 
@@ -444,7 +448,7 @@ export const useMatchGame = () => {
             // スワップまたは移動（targetがnullの場合は移動）
             const newBase = {
                 ...base,
-                [baseSourceSlot]: targetPlayer,  // nullかもしれない（空き枠への移動）
+                [baseSourceSlot]: targetPlayer,
                 [baseTargetSlot]: sourcePlayer
             };
 
@@ -461,10 +465,8 @@ export const useMatchGame = () => {
             const currentBase = side === 'A' ? s.baseA : s.baseB;
             if (!team) return s;
 
-            // コートにいる選手のIDセット
             const onCourtIds = new Set(Object.values(currentBase).filter(p => p !== null).map(p => p!.id));
 
-            // 新しいベンチ配列を作成（初期順序を維持）
             const newBench: (PlayerWithSide | null)[] = team.players.map(p => {
                 if (onCourtIds.has(p.id)) {
                     return null; // コートにいるなら、そのベンチ枠は空ける
@@ -472,7 +474,6 @@ export const useMatchGame = () => {
                 return { ...p, _side: side };
             });
 
-            // 14枠まで埋める
             while (newBench.length < 14) newBench.push(null);
 
             return side === 'A'
@@ -487,24 +488,20 @@ export const useMatchGame = () => {
             const currentBase = side === 'A' ? s.baseA : s.baseB;
             const currentPlayers = side === 'A' ? s.playersA : s.playersB;
 
-            // コートにいる選手を取得
             const courtPlayers = Object.values(currentBase).filter(p => p !== null) as PlayerWithSide[];
 
-            if (courtPlayers.length === 0) return s; // コートが空なら何もしない
+            if (courtPlayers.length === 0) return s;
 
-            // ベンチの空きスロットを探して埋める
             const newPlayers = [...currentPlayers];
             let playerIdx = 0;
 
             for (let i = 0; i < newPlayers.length; i++) {
                 if (newPlayers[i] === null && playerIdx < courtPlayers.length) {
-                    // 選手をベンチに戻す（サイド情報を付与）
                     newPlayers[i] = { ...courtPlayers[playerIdx], _side: side };
                     playerIdx++;
                 }
             }
 
-            // コートをクリア
             const newBase = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
 
             return side === 'A'
@@ -526,8 +523,6 @@ export const useMatchGame = () => {
         const currentBase = side === 'A' ? state.baseA : state.baseB;
         const currentSO = side === 'A' ? state.scoresA.so : state.scoresB.so;
 
-        // 🔥 CRITICAL: ターゲット位置を逆ローテーションして、base座標系でのターゲットを算出
-        // これにより、現在のサイドアウト数を考慮した正しい回転数が計算される
         const baseTargetPosition = reverseRotateSlot(config.targetPosition, currentSO);
 
         const { rotations, finalAssignment } = calculateSetterRotation(
