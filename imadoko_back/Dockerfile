@@ -44,7 +44,7 @@ USER spring:spring
 EXPOSE 8080
 
 # 起動コマンド
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
 
 # ヘルスチェック
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
