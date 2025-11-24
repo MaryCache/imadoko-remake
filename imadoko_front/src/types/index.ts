@@ -1,4 +1,4 @@
-export type Position = "WS" | "MB" | "S" | "OP" | "Li";
+export type Position = 'WS' | 'MB' | 'S' | 'OP' | 'Li';
 
 export type Player = {
   id: number;

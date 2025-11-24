@@ -1,13 +1,12 @@
-import type { NextConfig } from "next";
 import bundleAnalyzer from '@next/bundle-analyzer';
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === 'true',
 });
 
-const nextConfig: NextConfig = {
-
-  output: "standalone",
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'standalone',
 
   // Dockerビルドを通すための設定 (型エラーとLintエラーを無視)
   eslint: {
@@ -39,7 +38,9 @@ const nextConfig: NextConfig = {
     // - Production (Docker): http://backend:8080/api
     // - Development (Local): http://localhost:8080/api
     const isProd = process.env.NODE_ENV === 'production';
-    const destinationUrl = process.env.INTERNAL_API_URL || (isProd ? 'http://backend:8080/api' : 'http://localhost:8080/api');
+    const destinationUrl =
+      process.env.INTERNAL_API_URL ||
+      (isProd ? 'http://backend:8080/api' : 'http://localhost:8080/api');
 
     return [
       {

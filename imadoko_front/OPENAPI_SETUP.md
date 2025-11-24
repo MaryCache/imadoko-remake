@@ -36,7 +36,7 @@ type Player = components['schemas']['Player'];
 
 // 定数も自動抽出可能
 const MAX_PLAYERS = 14; // openapi.yaml の maxItems から抽出
-const MIN_PLAYERS = 1;  // openapi.yaml の minItems から抽出
+const MIN_PLAYERS = 1; // openapi.yaml の minItems から抽出
 ```
 
 ## 🎯 メリット

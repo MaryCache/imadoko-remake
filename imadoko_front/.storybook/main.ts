@@ -1,24 +1,21 @@
-import type { StorybookConfig } from "@storybook/nextjs-vite";
+import type { StorybookConfig } from '@storybook/nextjs-vite';
+import { mergeConfig } from 'vite';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 const config: StorybookConfig = {
-  "stories": [
-    "../src/**/*.mdx",
-    "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"
-  ],
-  "addons": [
-    "@chromatic-com/storybook",
-    "@storybook/addon-docs",
-    "@storybook/addon-onboarding",
-    "@storybook/addon-a11y",
-    "@storybook/addon-vitest",
-    "@storybook/addon-viewport"
-  ],
-  "framework": {
-    "name": "@storybook/nextjs-vite",
-    "options": {}
+  stories: ['../src/**/*.stories.@(js|jsx|mjs|ts|tsx)'],
+
+  addons: ['@storybook/addon-links'],
+  framework: {
+    name: '@storybook/nextjs-vite',
+    options: {},
   },
-  "staticDirs": [
-    "..\\public"
-  ]
+  staticDirs: ['../public'],
+  async viteFinal(baseConfig) {
+    return mergeConfig(baseConfig, {
+      plugins: [tsconfigPaths()],
+    });
+  },
 };
+
 export default config;

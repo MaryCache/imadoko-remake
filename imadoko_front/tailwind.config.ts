@@ -1,11 +1,11 @@
-import type { Config } from "tailwindcss";
+import type { Config } from 'tailwindcss';
 
 const config: Config = {
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/features/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/components/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/features/**/*.{js,ts,jsx,tsx,mdx}',
+    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
     extend: {
@@ -25,7 +25,7 @@ const config: Config = {
         pos: {
           ws: '#0055A4', // Mikasa Vivid Blue (主軸)
           mb: '#047857', // Deep Forest Green (壁)
-          s: '#FFC600',  // Mikasa Golden Yellow (司令塔)
+          s: '#FFC600', // Mikasa Golden Yellow (司令塔)
           op: '#BE123C', // Deep Crimson (攻撃の要)
           li: '#EA580C', // Deep Orange (守護神・異色)
         },

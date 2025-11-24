@@ -4,285 +4,285 @@
  */
 
 export interface paths {
-    "/teams": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** チーム一覧取得 */
-        get: operations["getAllTeams"];
-        put?: never;
-        /** チーム作成 */
-        post: operations["createTeam"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+  '/teams': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    "/teams/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** チーム取得 */
-        get: operations["getTeamById"];
-        /** チーム更新 */
-        put: operations["updateTeam"];
-        post?: never;
-        /** チーム削除 */
-        delete: operations["deleteTeam"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
+    /** チーム一覧取得 */
+    get: operations['getAllTeams'];
+    put?: never;
+    /** チーム作成 */
+    post: operations['createTeam'];
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  '/teams/{id}': {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
+    /** チーム取得 */
+    get: operations['getTeamById'];
+    /** チーム更新 */
+    put: operations['updateTeam'];
+    post?: never;
+    /** チーム削除 */
+    delete: operations['deleteTeam'];
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        Team: {
-            /**
-             * Format: int64
-             * @example 1
-             */
-            id: number;
-            /** @example 東京バレーボールクラブ */
-            teamName: string;
-            /** @description 選手リスト（1～14名） */
-            players: components["schemas"]["Player"][];
-        };
-        TeamRequest: {
-            /** @example 東京バレーボールクラブ */
-            teamName: string;
-            /** @description 選手リスト（1～14名） */
-            players: components["schemas"]["PlayerRequest"][];
-        };
-        Player: {
-            /**
-             * Format: int64
-             * @example 1
-             */
-            id: number;
-            /** @example 太郎 */
-            firstName: string;
-            /** @example 山田 */
-            lastName: string;
-            /**
-             * @example WS
-             * @enum {string}
-             */
-            position: "S" | "WS" | "MB" | "OP" | "L";
-        };
-        PlayerRequest: {
-            /** @example 太郎 */
-            firstName: string;
-            /** @example 山田 */
-            lastName: string;
-            /**
-             * @example WS
-             * @enum {string}
-             */
-            position: "S" | "WS" | "MB" | "OP" | "L";
-        };
-        ErrorResponse: {
-            /** @example チーム名は必須です */
-            message?: string;
-            /**
-             * Format: date-time
-             * @example 2025-11-21T10:30:00Z
-             */
-            timestamp?: string;
-        };
+  schemas: {
+    Team: {
+      /**
+       * Format: int64
+       * @example 1
+       */
+      id: number;
+      /** @example 東京バレーボールクラブ */
+      teamName: string;
+      /** @description 選手リスト（1～14名） */
+      players: components['schemas']['Player'][];
     };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+    TeamRequest: {
+      /** @example 東京バレーボールクラブ */
+      teamName: string;
+      /** @description 選手リスト（1～14名） */
+      players: components['schemas']['PlayerRequest'][];
+    };
+    Player: {
+      /**
+       * Format: int64
+       * @example 1
+       */
+      id: number;
+      /** @example 太郎 */
+      firstName: string;
+      /** @example 山田 */
+      lastName: string;
+      /**
+       * @example WS
+       * @enum {string}
+       */
+      position: 'S' | 'WS' | 'MB' | 'OP' | 'L';
+    };
+    PlayerRequest: {
+      /** @example 太郎 */
+      firstName: string;
+      /** @example 山田 */
+      lastName: string;
+      /**
+       * @example WS
+       * @enum {string}
+       */
+      position: 'S' | 'WS' | 'MB' | 'OP' | 'L';
+    };
+    ErrorResponse: {
+      /** @example チーム名は必須です */
+      message?: string;
+      /**
+       * Format: date-time
+       * @example 2025-11-21T10:30:00Z
+       */
+      timestamp?: string;
+    };
+  };
+  responses: never;
+  parameters: never;
+  requestBodies: never;
+  headers: never;
+  pathItems: never;
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    getAllTeams: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 成功 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Team"][];
-                };
-            };
-            /** @description サーバーエラー */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
+  getAllTeams: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    createTeam: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
+    requestBody?: never;
+    responses: {
+      /** @description 成功 */
+      200: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TeamRequest"];
-            };
+        content: {
+          'application/json': components['schemas']['Team'][];
         };
-        responses: {
-            /** @description 作成成功 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Team"];
-                };
-            };
-            /** @description バリデーションエラー */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description サーバーエラー */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
+      };
+      /** @description サーバーエラー */
+      500: {
+        headers: {
+          [name: string]: unknown;
         };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
     };
-    getTeamById: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @example 1 */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 成功 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Team"];
-                };
-            };
-            /** @description チームが見つかりません */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
+  };
+  createTeam: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
     };
-    updateTeam: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @example 1 */
-                id: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["TeamRequest"];
-            };
-        };
-        responses: {
-            /** @description 更新成功 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["Team"];
-                };
-            };
-            /** @description バリデーションエラー */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description チームが見つかりません */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TeamRequest'];
+      };
     };
-    deleteTeam: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @example 1 */
-                id: number;
-            };
-            cookie?: never;
+    responses: {
+      /** @description 作成成功 */
+      201: {
+        headers: {
+          [name: string]: unknown;
         };
-        requestBody?: never;
-        responses: {
-            /** @description 削除成功 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description チームが見つかりません */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
+        content: {
+          'application/json': components['schemas']['Team'];
         };
+      };
+      /** @description バリデーションエラー */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description サーバーエラー */
+      500: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
     };
+  };
+  getTeamById: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @example 1 */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 成功 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Team'];
+        };
+      };
+      /** @description チームが見つかりません */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  updateTeam: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @example 1 */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody: {
+      content: {
+        'application/json': components['schemas']['TeamRequest'];
+      };
+    };
+    responses: {
+      /** @description 更新成功 */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['Team'];
+        };
+      };
+      /** @description バリデーションエラー */
+      400: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+      /** @description チームが見つかりません */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
+  deleteTeam: {
+    parameters: {
+      query?: never;
+      header?: never;
+      path: {
+        /** @example 1 */
+        id: number;
+      };
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description 削除成功 */
+      204: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content?: never;
+      };
+      /** @description チームが見つかりません */
+      404: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          'application/json': components['schemas']['ErrorResponse'];
+        };
+      };
+    };
+  };
 }
