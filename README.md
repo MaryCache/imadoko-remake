@@ -5,6 +5,8 @@
 
 ![イマドコローテ - バレーボールローテーション管理画面](page.png) 
 
+> 📋 **開発環境・使用ツールの詳細**: [tool.md](tool.md) 
+
 ## 📖 Context & Story
 
 このプロジェクトは、プログラミング学習開始5日目に作成した処女作「[imadoko-rotate](https://github.com/MaryCache/imadoko-rotate)」を、3ヶ月後に「実務水準の設計思想」でフルスクラッチ（リメイク）したものです。
@@ -21,7 +23,7 @@ v1では「動くこと」を最優先しましたが、v2では「壊れない�
 | :--- | :--- | :--- |
 | **Concept** | 5日間の成果物 | 3ヶ月の学習に基づく設計 |
 | **Frontend** | React (Vite) / HTML5 DnD | Next.js 16 (App Router) / @dnd-kit |
-| **Backend** | Spring Boot 2.7 (Java 17) | Spring Boot 3.2 (Java 21) / Docker |
+| **Backend** | Spring Boot 2.7 (Java 17) | Spring Boot 3.2 (Java 17) / Docker |
 | **Architecture** | Fat Controller / 密結合 | Layered Arch / Feature-based / SSOT |
 | **Data Safety** | SQLite (再起動で消失) | PostgreSQL (Managed) / LocalStorage Guard |
 | **Type Safety** | 手動定義 / `any`の温床 | OpenAPI Generator / Zod / Strict Mode |
