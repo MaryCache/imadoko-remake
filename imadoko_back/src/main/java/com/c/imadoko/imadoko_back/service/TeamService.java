@@ -1,5 +1,7 @@
 package com.c.imadoko.imadoko_back.service;
 
+import com.c.imadoko.common.exception.ErrorCode;
+import com.c.imadoko.common.exception.ImadokoException;
 import com.c.imadoko.imadoko_back.api.dto.PlayerRequest;
 import com.c.imadoko.imadoko_back.api.dto.TeamRequest;
 import com.c.imadoko.imadoko_back.domain.Player;
@@ -26,23 +28,22 @@ public class TeamService {
   public Team findById(Long id) {
     return teamRepository
         .findById(id)
-        .orElseThrow(() -> new EntityNotFoundException("Team not found with id: " + id));
+        .orElseThrow(() -> new ImadokoException(ErrorCode.TEAM_NOT_FOUND));
   }
 
   public Team create(TeamRequest request) {
     if (teamRepository.existsByTeamName(request.teamName())) {
-      throw new IllegalArgumentException("Team name already exists: " + request.teamName());
+      throw new ImadokoException(ErrorCode.DUPLICATE_TEAM_NAME);
     }
 
     Team team = new Team(request.teamName());
-    List<Player> players =
-        request.players().stream().map(this::toEntity).collect(Collectors.toList());
+    List<Player> players = request.players().stream().map(this::toEntity).collect(Collectors.toList());
 
     // Limit to 14 players if necessary, though spec says "can register up to 14",
     // usually means UI restriction, but good to enforce here or just allow list.
     // Spec: "選手は十四名まで登録可能"
     if (players.size() > 14) {
-      throw new IllegalArgumentException("Maximum 14 players allowed per team.");
+      throw new ImadokoException(ErrorCode.INVALID_REQUEST);
     }
 
     team.setPlayers(players);
@@ -55,18 +56,17 @@ public class TeamService {
     // Check name uniqueness if changed
     if (!team.getTeamName().equals(request.teamName())
         && teamRepository.existsByTeamName(request.teamName())) {
-      throw new IllegalArgumentException("Team name already exists: " + request.teamName());
+      throw new ImadokoException(ErrorCode.DUPLICATE_TEAM_NAME);
     }
 
     team.setTeamName(request.teamName());
 
     // Replace players
     team.getPlayers().clear();
-    List<Player> newPlayers =
-        request.players().stream().map(this::toEntity).collect(Collectors.toList());
+    List<Player> newPlayers = request.players().stream().map(this::toEntity).collect(Collectors.toList());
 
     if (newPlayers.size() > 14) {
-      throw new IllegalArgumentException("Maximum 14 players allowed per team.");
+      throw new ImadokoException(ErrorCode.INVALID_REQUEST);
     }
 
     team.getPlayers().addAll(newPlayers);
@@ -76,7 +76,7 @@ public class TeamService {
 
   public void delete(Long id) {
     if (!teamRepository.existsById(id)) {
-      throw new EntityNotFoundException("Team not found with id: " + id);
+      throw new ImadokoException(ErrorCode.TEAM_NOT_FOUND);
     }
     teamRepository.deleteById(id);
   }

@@ -1,21 +1,18 @@
-import { api } from '../../../lib/axios';
+import { apiClient } from '../../../lib/apiClient';
 import type { Team } from '../../../types';
 
 export const getTeams = async (): Promise<Team[]> => {
-  const response = await api.get<Team[]>('/teams');
-  return response.data;
+  return apiClient.get<Team[]>('/teams');
 };
 
 export const createTeam = async (team: Omit<Team, 'id'>): Promise<Team> => {
-  const response = await api.post<Team>('/teams', team);
-  return response.data;
+  return apiClient.post<Team>('/teams', team);
 };
 
 export const updateTeam = async (id: number, team: Omit<Team, 'id'>): Promise<Team> => {
-  const response = await api.put<Team>(`/teams/${id}`, team);
-  return response.data;
+  return apiClient.put<Team>(`/teams/${id}`, team);
 };
 
 export const deleteTeam = async (id: number): Promise<void> => {
-  await api.delete(`/teams/${id}`);
+  return apiClient.delete<void>(`/teams/${id}`);
 };

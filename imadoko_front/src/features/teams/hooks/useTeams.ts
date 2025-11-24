@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { Team, ApiError } from '../../../types';
+import type { Team } from '../../../types';
+import { ApiError } from '../../../types/api';
 import * as teamsApi from '../api/teamsApi';
 import { useToast } from '../../../components/ui/Toast';
 import { logger } from '../../../lib/logger';
@@ -19,20 +20,21 @@ export const useTeams = () => {
       logger.info('Teams fetched successfully', { count: data.length });
       setTeams(data);
     } catch (err) {
-      const apiError = err as ApiError;
-      const errorMsg =
-        apiError?.response?.status === 404
-          ? 'チームが見つかりませんでした'
-          : (apiError?.response?.status ?? 0) >= 500
-            ? 'サーバーエラーが発生しました'
-            : 'チームの取得に失敗しました';
-      setError(errorMsg);
-      showToast('error', errorMsg);
-      logger.error('Error fetching teams', err);
+      if (err instanceof ApiError) {
+        const errorMsg = err.message || 'チームの取得に失敗しました';
+        setError(errorMsg);
+        showToast('error', errorMsg);
+        logger.error('Error fetching teams', err);
+      } else {
+        const errorMsg = 'ネットワークエラーが発生しました';
+        setError(errorMsg);
+        showToast('error', errorMsg);
+        logger.error('Network error fetching teams', err);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [showToast]);
 
   const createTeam = async (team: Omit<Team, 'id'>) => {
     setIsLoading(true);
@@ -42,11 +44,29 @@ export const useTeams = () => {
       await fetchTeams();
       showToast('success', `チーム「${team.teamName}」を作成しました`);
     } catch (err) {
-      const apiError = err as ApiError;
-      const errorMsg = apiError?.response?.data?.message || 'チームの作成に失敗しました';
-      setError(errorMsg);
-      showToast('error', errorMsg);
-      logger.error('Error creating team', err);
+      if (err instanceof ApiError) {
+        switch (err.code) {
+          case 'E102':
+            setError('チーム名が重複しています');
+            showToast('error', 'チーム名が重複しています');
+            break;
+          case 'E400':
+            setError('入力内容を確認してください');
+            showToast('error', '入力内容を確認してください');
+            if (err.details.length > 0) {
+              logger.warn('Validation errors:', err.details);
+            }
+            break;
+          default:
+            setError(err.message || '予期せぬエラーが発生しました');
+            showToast('error', err.message || '予期せぬエラーが発生しました');
+        }
+        logger.error('Error creating team', err);
+      } else {
+        setError('ネットワークエラーが発生しました');
+        showToast('error', 'ネットワークエラーが発生しました');
+        logger.error('Network error creating team', err);
+      }
       throw err;
     } finally {
       setIsLoading(false);
@@ -61,11 +81,33 @@ export const useTeams = () => {
       await fetchTeams();
       showToast('success', `チーム「${team.teamName}」を更新しました`);
     } catch (err) {
-      const apiError = err as ApiError;
-      const errorMsg = apiError?.response?.data?.message || 'チームの更新に失敗しました';
-      setError(errorMsg);
-      showToast('error', errorMsg);
-      logger.error('Error updating team', err);
+      if (err instanceof ApiError) {
+        switch (err.code) {
+          case 'E102':
+            setError('チーム名が重複しています');
+            showToast('error', 'チーム名が重複しています');
+            break;
+          case 'E101':
+            setError('指定されたチームが見つかりません');
+            showToast('error', '指定されたチームが見つかりません');
+            break;
+          case 'E400':
+            setError('入力内容を確認してください');
+            showToast('error', '入力内容を確認してください');
+            if (err.details.length > 0) {
+              logger.warn('Validation errors:', err.details);
+            }
+            break;
+          default:
+            setError(err.message || '予期せぬエラーが発生しました');
+            showToast('error', err.message || '予期せぬエラーが発生しました');
+        }
+        logger.error('Error updating team', err);
+      } else {
+        setError('ネットワークエラーが発生しました');
+        showToast('error', 'ネットワークエラーが発生しました');
+        logger.error('Network error updating team', err);
+      }
       throw err;
     } finally {
       setIsLoading(false);
@@ -80,11 +122,22 @@ export const useTeams = () => {
       await fetchTeams();
       showToast('success', 'チームを削除しました');
     } catch (err) {
-      const apiError = err as ApiError;
-      const errorMsg = apiError?.response?.data?.message || 'チームの削除に失敗しました';
-      setError(errorMsg);
-      showToast('error', errorMsg);
-      logger.error('Error deleting team', err);
+      if (err instanceof ApiError) {
+        switch (err.code) {
+          case 'E101':
+            setError('指定されたチームが見つかりません');
+            showToast('error', '指定されたチームが見つかりません');
+            break;
+          default:
+            setError(err.message || '予期せぬエラーが発生しました');
+            showToast('error', err.message || '予期せぬエラーが発生しました');
+        }
+        logger.error('Error deleting team', err);
+      } else {
+        setError('ネットワークエラーが発生しました');
+        showToast('error', 'ネットワークエラーが発生しました');
+        logger.error('Network error deleting team', err);
+      }
       throw err;
     } finally {
       setIsLoading(false);

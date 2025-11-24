@@ -25,8 +25,9 @@ import { dropAnimation } from './utils/animations';
 import { useRotationAnimation } from './hooks/useRotationAnimation';
 import type { Player, CourtSlotId } from '../../types';
 import { MatchHUD } from './components/MatchHUD';
+import { ErrorBoundary } from '../../components/ui/ErrorBoundary';
 
-export default function MatchPage() {
+function MatchPageContent() {
   const { state, actions } = useMatchGame();
   const { teams, error, isLoading, actions: teamActions } = useTeams();
 
@@ -184,10 +185,10 @@ export default function MatchPage() {
               'flex-1 py-3 text-sm font-bold rounded-t-xl border-t-2 border-x-2 transition-all duration-150',
               activeTab === 'A'
                 ? // Active: 白背景、下線なし(border-b-0)、z-index高(手前)
-                  // 下のマージンを調整してコンテンツエリアに「被せる」
-                  'bg-white text-mikasa-blue-deep border-slate-200 border-b-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]'
+                // 下のマージンを調整してコンテンツエリアに「被せる」
+                'bg-white text-mikasa-blue-deep border-slate-200 border-b-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]'
                 : // Inactive: グレー背景、下線あり(border-b-2)、z-index低(奥)
-                  'bg-slate-100 text-slate-400 border-transparent border-b-2 border-b-slate-200 hover:bg-slate-50 z-0'
+                'bg-slate-100 text-slate-400 border-transparent border-b-2 border-b-slate-200 hover:bg-slate-50 z-0'
             )}
           >
             {state.teamA?.teamName || 'チームA'}
@@ -308,5 +309,14 @@ export default function MatchPage() {
         warning={warning}
       />
     </DndContext>
+  );
+  );
+}
+
+export default function MatchPage() {
+  return (
+    <ErrorBoundary>
+      <MatchPageContent />
+    </ErrorBoundary>
   );
 }

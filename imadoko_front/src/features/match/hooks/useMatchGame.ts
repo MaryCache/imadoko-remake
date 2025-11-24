@@ -11,7 +11,20 @@ import type {
 import { COURT_SLOTS } from '../../../lib/constants';
 import { logger } from '../../../lib/logger';
 
+import {
+  rotateAssignment,
+  reverseRotateSlot,
+  calculateSetterRotation,
+} from '../logic/rotation';
+import { useToast } from '../../../components/ui/Toast';
+
 const STORAGE_KEY = 'match-state-v2';
+const CURRENT_VERSION = 1;
+
+interface PersistedState {
+  version: number;
+  data: MatchState;
+}
 
 // サイド固有のプレイヤー情報（内部管理用）
 interface PlayerWithSide extends Player {
@@ -56,47 +69,22 @@ const INITIAL_STATE: MatchState = {
   scoresB: { ...INITIAL_SCORE },
 };
 
+
+
 /**
- * ローテーション処理
- * バレーボールのルールに従い、時計回りにポジションを移動
- * 1→6→5→4→3→2→1 の順に回転
+ * 重複選手の削除
  */
-const rotateAssignment = (base: CourtAssignment, rotations: number): CourtAssignment => {
-  const result = { ...base };
-  const effectiveRotations = rotations % 6;
-  if (effectiveRotations === 0) return result;
-
-  const cycle = [1, 6, 5, 4, 3, 2];
-
-  const newAssignment: CourtAssignment = { ...INITIAL_ASSIGNMENT };
-
-  COURT_SLOTS.forEach((slot) => {
-    const player = base[slot as CourtSlotId];
-    if (player) {
-      const idx = cycle.indexOf(slot);
-      const newIdx = (idx + effectiveRotations) % 6;
-      const newSlot = cycle[newIdx] as CourtSlotId;
-      newAssignment[newSlot] = player;
+const removePlayerFromAssignment = (
+  assignment: CourtAssignment,
+  playerId: number
+): CourtAssignment => {
+  const newAssignment = { ...assignment };
+  (COURT_SLOTS as readonly CourtSlotId[]).forEach((slot) => {
+    if (newAssignment[slot]?.id === playerId) {
+      newAssignment[slot] = null;
     }
   });
-
   return newAssignment;
-};
-
-/**
- * 逆ローテーション計算
- * 現在のSO数を考慮して、表示位置から元のbase位置を逆算
- */
-const reverseRotateSlot = (displaySlot: CourtSlotId, rotations: number): CourtSlotId => {
-  const effectiveRotations = rotations % 6;
-  if (effectiveRotations === 0) return displaySlot;
-
-  const cycle = [1, 6, 5, 4, 3, 2];
-  const displayIdx = cycle.indexOf(displaySlot);
-
-  // 逆ローテーション = (現在位置 - ローテーション数 + 6) % 6
-  const baseIdx = (displayIdx - effectiveRotations + 6) % 6;
-  return cycle[baseIdx] as CourtSlotId;
 };
 
 /**
@@ -134,62 +122,9 @@ const calculateServeStatus = (
   }
 };
 
-/**
- * セッターローテーション計算
- */
-const calculateSetterRotation = (
-  currentBase: CourtAssignment,
-  setter: Player,
-  targetPosition: CourtSlotId
-): { rotations: number; finalAssignment: CourtAssignment } => {
-  let currentSetterPosition: CourtSlotId | null = null;
-  for (const slot of COURT_SLOTS) {
-    if (currentBase[slot as CourtSlotId]?.id === setter.id) {
-      currentSetterPosition = slot as CourtSlotId;
-      break;
-    }
-  }
-
-  if (!currentSetterPosition) {
-    const assignment: CourtAssignment = {
-      1: null,
-      2: null,
-      3: null,
-      4: null,
-      5: null,
-      6: null,
-    };
-    assignment[targetPosition] = setter;
-    return { rotations: 0, finalAssignment: assignment };
-  }
-
-  const cycle = [1, 6, 5, 4, 3, 2];
-  const currentIdx = cycle.indexOf(currentSetterPosition);
-  const targetIdx = cycle.indexOf(targetPosition);
-  const rotations = (targetIdx - currentIdx + 6) % 6;
-
-  const finalAssignment = rotateAssignment(currentBase, rotations);
-
-  return { rotations, finalAssignment };
-};
-
-/**
- * 重複選手の削除
- */
-const removePlayerFromAssignment = (
-  assignment: CourtAssignment,
-  playerId: number
-): CourtAssignment => {
-  const newAssignment = { ...assignment };
-  (COURT_SLOTS as readonly CourtSlotId[]).forEach((slot) => {
-    if (newAssignment[slot]?.id === playerId) {
-      newAssignment[slot] = null;
-    }
-  });
-  return newAssignment;
-};
-
 export const useMatchGame = () => {
+  const { showToast } = useToast();
+
   // ★ 修正: 初期化時は必ず INITIAL_STATE を使い、Hydration Errorを防ぐ
   const [state, setState] = useState<MatchState>(INITIAL_STATE);
   // ★ 追加: 初期ロード完了フラグ（空データで上書き保存してしまうのを防ぐため）
@@ -201,19 +136,34 @@ export const useMatchGame = () => {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         try {
-          setState(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          // バージョンチェック
+          if (parsed.version === CURRENT_VERSION && parsed.data) {
+            setState(parsed.data);
+          } else {
+            // バージョン不整合または形式不正
+            logger.warn('Storage version mismatch or invalid format. Resetting state.');
+            showToast('info', 'データ形式が更新されたため、試合データをリセットしました');
+            localStorage.removeItem(STORAGE_KEY);
+          }
         } catch (e) {
           logger.error('Failed to parse match state', e);
+          showToast('error', '保存データの読み込みに失敗しました');
+          localStorage.removeItem(STORAGE_KEY);
         }
       }
       setIsInitialized(true); // 読み込み完了
     }
-  }, []);
+  }, [showToast]);
 
   // ★ 修正: 読み込み完了後のみ保存を実行する
   useEffect(() => {
     if (typeof window !== 'undefined' && isInitialized) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const persisted: PersistedState = {
+        version: CURRENT_VERSION,
+        data: state,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(persisted));
     }
   }, [state, isInitialized]);
 
