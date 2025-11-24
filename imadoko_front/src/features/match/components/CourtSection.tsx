@@ -1,5 +1,12 @@
+// ============================================================
+// 対象ファイル: imadoko_front/src/features/match/components/CourtSection.tsx
+// 役割: チームごとのコートセクション（セットカウント機能追加版）
+// ============================================================
+
 import React from 'react';
 import dynamic from 'next/dynamic';
+import { Plus, Minus } from 'lucide-react';
+import { Button } from '../../../components/ui/Button';
 import type { Player, CourtAssignment, Team, SetterRotationConfig } from '../../../types';
 import { CourtBoard } from './CourtBoard';
 import { Bench } from './Bench';
@@ -18,20 +25,21 @@ const SetterRotationPanel = dynamic(
 interface CourtSectionProps {
   team: Team | null;
   teams: Team[];
-  // 修正: 動的な選手リストを受け取る
   players: (Player | null)[];
   side: 'A' | 'B';
   assignment: CourtAssignment;
   sideOut: number;
   break_: number;
+  sets: number; // ★追加: セットカウント
   isRotating: boolean;
   previousAssignment: CourtAssignment;
   isValid: boolean;
-  hasServe: boolean; // サーブ権の有無
+  hasServe: boolean;
   onSelectTeam: (team: Team | null) => void;
-  onUpdateScore: (side: 'A' | 'B', type: 'so' | 'br', value: number) => void;
-  onResetCourt: () => void; // 変更: コートリセット
-  onResetBench: () => void; // 追加: ベンチリセット
+  // 修正: typeに 'sets' を追加
+  onUpdateScore: (side: 'A' | 'B', type: 'so' | 'br' | 'sets', value: number) => void;
+  onResetCourt: () => void;
+  onResetBench: () => void;
   onApplyRotation: (side: 'A' | 'B', config: SetterRotationConfig) => void;
 }
 
@@ -47,6 +55,7 @@ export const CourtSection: React.FC<CourtSectionProps> = ({
   assignment,
   sideOut,
   break_,
+  sets,
   isRotating,
   previousAssignment,
   isValid,
@@ -61,7 +70,6 @@ export const CourtSection: React.FC<CourtSectionProps> = ({
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      {/* 修正: p-6 -> p-3 (モバイル) に変更して高さを圧縮 */}
       <div className="p-3 sm:p-6 border-b border-slate-100 bg-slate-50/50">
         <TeamSelector
           value={team}
@@ -71,7 +79,6 @@ export const CourtSection: React.FC<CourtSectionProps> = ({
         />
       </div>
 
-      {/* 修正: コンテンツ部分の余白も少し調整 (p-6 -> p-4 sm:p-6) */}
       <div className="p-4 sm:p-6 space-y-6">
         <ScoreBoard
           side={side}
@@ -93,7 +100,6 @@ export const CourtSection: React.FC<CourtSectionProps> = ({
           />
           {team && (
             <Bench
-              // 修正: team.playersではなく、親から来た動的リストを渡す
               players={players}
               assignment={assignment}
               side={side}
@@ -107,6 +113,40 @@ export const CourtSection: React.FC<CourtSectionProps> = ({
               onApplyRotation={onApplyRotation}
               currentAssignment={assignment}
             />
+          )}
+
+          {/* ★追加: セットカウントUI */}
+          {team && (
+            <div className="bg-slate-50 rounded-lg p-3 border border-slate-200 flex items-center justify-between">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                セットカウント
+              </span>
+              <div className="flex items-center gap-3">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => onUpdateScore(side, 'sets', Math.max(0, sets - 1))}
+                  disabled={sets <= 0}
+                  className="w-8 h-8 !p-0 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-100"
+                >
+                  <Minus size={14} className="text-slate-600" />
+                </Button>
+
+                <span className="w-6 text-center text-xl font-bold text-slate-800 tabular-nums leading-none">
+                  {sets}
+                </span>
+
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => onUpdateScore(side, 'sets', Math.min(9, sets + 1))}
+                  disabled={sets >= 9}
+                  className="w-8 h-8 !p-0 rounded-full bg-white border border-slate-200 shadow-sm hover:bg-slate-100"
+                >
+                  <Plus size={14} className="text-slate-600" />
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </div>

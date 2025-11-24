@@ -1,3 +1,4 @@
+"use client";
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from './Button';
 import { AlertTriangle, RefreshCw } from 'lucide-react';

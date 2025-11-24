@@ -1,3 +1,8 @@
+// ============================================================
+// 対象ファイル: imadoko_front/src/features/match/MatchPage.tsx
+// 役割: 試合シミュレーションページ（セットカウント連携追加版）
+// ============================================================
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -104,7 +109,6 @@ function MatchPageContent() {
     // ------------------------------------------------------------------
     if (sourceType === 'bench' && targetType === 'court') {
       const slotId = overData.slotId as CourtSlotId;
-      // ★ Step 6修正: ベンチのindexを取得して渡す（スワップ用）
       const benchIndex = activeData.index as number;
 
       if (sourceSide === 'A') {
@@ -120,8 +124,6 @@ function MatchPageContent() {
       const courtSlot = activeData.slotId as CourtSlotId;
       const benchIndex = overData.index as number;
 
-      // 🛡 専用関数で Court(Object) <-> Bench(Array) のスワップを処理
-      // これにより、コートの選手をベンチに戻したり、ベンチの選手と交換したりが可能になる
       actions.swapCourtAndBench(sourceSide, courtSlot, benchIndex);
     }
     // ------------------------------------------------------------------
@@ -131,7 +133,6 @@ function MatchPageContent() {
       const sourceSlot = activeData.slotId as CourtSlotId;
       const targetSlot = overData.slotId as CourtSlotId;
 
-      // 🛡 専用関数でCourt内のスワップ/移動を処理（ローテーション考慮済み）
       actions.swapCourtPlayers(sourceSide, sourceSlot, targetSlot);
     }
     // ------------------------------------------------------------------
@@ -141,7 +142,6 @@ function MatchPageContent() {
       const sourceIndex = activeData.index as number;
       const targetIndex = overData.index as number;
 
-      // ベンチ内の並び替えを実行
       actions.swapBenchPlayers(sourceSide, sourceIndex, targetIndex);
     }
   };
@@ -171,29 +171,22 @@ function MatchPageContent() {
 
   return (
     <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
-      {/* ★ Step 8修正: メインコンテンツを独立させ、レイアウト干渉を防ぐ */}
       <div className="space-y-4 pb-28">
         <MatchControls onSwapSides={actions.swapSides} onResetAll={actions.resetAll} />
 
-        {/* ★ モバイル用タブ切り替え: 「フォルダタブ」風デザインに刷新 
-                   下のコンテンツエリアと物理的に繋がっているように見せる
-                */}
+        {/* モバイル用タブ切り替え */}
         <div className="md:hidden flex items-end px-2 -mb-[2px] relative z-10 select-none">
           <button
             onClick={() => setActiveTab('A')}
             className={clsx(
               'flex-1 py-3 text-sm font-bold rounded-t-xl border-t-2 border-x-2 transition-all duration-150',
               activeTab === 'A'
-                ? // Active: 白背景、下線なし(border-b-0)、z-index高(手前)
-                // 下のマージンを調整してコンテンツエリアに「被せる」
-                'bg-white text-mikasa-blue-deep border-slate-200 border-b-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]'
-                : // Inactive: グレー背景、下線あり(border-b-2)、z-index低(奥)
-                'bg-slate-100 text-slate-400 border-transparent border-b-2 border-b-slate-200 hover:bg-slate-50 z-0'
+                ? 'bg-white text-mikasa-blue-deep border-slate-200 border-b-0 z-20 shadow-[0_-2px_4px_rgba(0,0,0,0.02)]'
+                : 'bg-slate-100 text-slate-400 border-transparent border-b-2 border-b-slate-200 hover:bg-slate-50 z-0'
             )}
           >
             {state.teamA?.teamName || 'チームA'}
           </button>
-          {/* 隙間 */}
           <div className="w-1 border-b-2 border-slate-200"></div>
           <button
             onClick={() => setActiveTab('B')}
@@ -208,7 +201,6 @@ function MatchPageContent() {
           </button>
         </div>
 
-        {/* レイアウトアニメーション用のグループ（サイドごとに分離） */}
         <div className="grid md:grid-cols-2 gap-8">
           {/* チームAセクション */}
           <div className={clsx('md:block', activeTab === 'A' ? 'block' : 'hidden')}>
@@ -226,6 +218,7 @@ function MatchPageContent() {
                   assignment={state.assignA}
                   sideOut={state.scoresA.so}
                   break_={state.scoresA.br}
+                  sets={state.scoresA.sets} // ★追加: セットカウント
                   isRotating={isRotatingA}
                   previousAssignment={prevAssignA}
                   isValid={state.serveStatus.isValid}
@@ -256,6 +249,7 @@ function MatchPageContent() {
                   assignment={state.assignB}
                   sideOut={state.scoresB.so}
                   break_={state.scoresB.br}
+                  sets={state.scoresB.sets} // ★追加: セットカウント
                   isRotating={isRotatingB}
                   previousAssignment={prevAssignB}
                   isValid={state.serveStatus.isValid}
@@ -271,9 +265,7 @@ function MatchPageContent() {
           </div>
         </div>
       </div>
-      {/* ↑ メインコンテンツの閉じタグ */}
 
-      {/* スティッキーフッター */}
       <MatchFooter
         teamAName={state.teamA?.teamName || 'Team A'}
         teamBName={state.teamB?.teamName || 'Team B'}
@@ -281,17 +273,13 @@ function MatchPageContent() {
         scoresB={state.scoresB}
       />
 
-      {/* ドラッグオーバーレイ (ドラッグ中の表示) */}
       <DragOverlay dropAnimation={dropAnimation}>
         {draggedItem ? (
-          // 修正: サイズを可変に (w-20 h-20 sm:w-24 sm:h-24)、パディング縮小
           <div className="w-20 h-20 sm:w-24 sm:h-24 bg-white rounded-lg shadow-xl border-2 border-mikasa-blue flex flex-col items-center justify-center p-1 sm:p-2 opacity-90 cursor-grabbing">
-            {/* 修正: バッジ縮小 */}
             <PositionBadge
               position={draggedItem.position}
               className="mb-0.5 sm:mb-1 scale-90 sm:scale-100 origin-bottom"
             />
-            {/* 修正: 文字サイズ縮小 */}
             <span className="text-xs sm:text-sm font-bold text-slate-900 text-center truncate w-full leading-tight px-1">
               {draggedItem.lastName}
             </span>
@@ -299,7 +287,6 @@ function MatchPageContent() {
         ) : null}
       </DragOverlay>
 
-      {/* HUD */}
       <MatchHUD
         serveStatus={state.serveStatus}
         sameTeamWarning={{
@@ -309,7 +296,6 @@ function MatchPageContent() {
         warning={warning}
       />
     </DndContext>
-  );
   );
 }
 

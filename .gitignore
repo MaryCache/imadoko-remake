@@ -17,6 +17,7 @@ docs/archive/
 logs/
 response/
 prompt/
+
 # Temporary files
 tmp/
 temp/
