@@ -23,3 +23,6 @@ temp/
 
 # Build files
 /imadoko_back/target/
+/imadoko_front/storybook-static/
+/imadoko_front/node_modules/
+
