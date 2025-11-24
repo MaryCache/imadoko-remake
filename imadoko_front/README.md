@@ -10,7 +10,7 @@ React + Vite プロジェクト (`imadoko_front`) から Next.js (App Router) �
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS 4
 - **UI Components**: Headless UI, Lucide React
-- **HTTP Client**: Axios
+- **HTTP Client**: Custom API Client (with retry mechanism)
 - **State Management**: React Hooks (useState, useEffect)
 
 ## 移行完了項目
